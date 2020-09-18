@@ -247,6 +247,29 @@ namespace Rock.Badge
         public virtual void Render( BadgeCache badge, HtmlTextWriter writer ) { }
 
         /// <summary>
+        /// Gets the java script.
+        /// </summary>
+        /// <returns></returns>
+        protected virtual string GetJavaScript( BadgeCache badge ) {
+            return null;
+        }
+
+        /// <summary>
+        /// Adds the java script.
+        /// </summary>
+        /// <returns></returns>
+        public virtual string GetWrappedJavaScript( BadgeCache badge ) {
+            var script = GetJavaScript( badge );
+
+            if ( script.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            return $"(function () {{ {script} }})();";
+        }
+
+        /// <summary>
         /// Renders the specified writer.
         /// </summary>
         /// <param name="personBadgeCache">The badge.</param>

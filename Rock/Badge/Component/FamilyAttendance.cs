@@ -83,42 +83,42 @@ namespace Rock.Badge.Component
             writer.Write( String.Format( "<div class='badge badge-attendance{0} badge-id-{1}' data-toggle='tooltip' data-original-title='{2}'>", animateClass, badge.Id, tooltip ) );
 
             writer.Write("</div>");
-
-            writer.Write(String.Format( @"
-                <script>
-                    Sys.Application.add_load(function () {{
-
-                        var monthNames = [ 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' ];
-
-
-                        $.ajax({{
-                                type: 'GET',
-                                url: Rock.settings.get('baseUrl') + 'api/Badges/FamilyAttendance/{0}/{1}' ,
-                                statusCode: {{
-                                    200: function (data, status, xhr) {{
-                                            var chartHtml = '<ul class=\'attendance-chart list-unstyled\'>';
-                                            $.each(data, function() {{
-                                                var barHeight = (this.AttendanceCount / this.SundaysInMonth) * 100;
-                                                if (barHeight < {2}) {{
-                                                    barHeight = {2};
-                                                }}
-
-                                                chartHtml += '<li title=\'' + monthNames[this.Month -1] + ' ' + this.Year +'\'><span style=\'height: ' + barHeight + '%\'></span></li>';
-                                            }});
-                                            chartHtml += '</ul>';
-
-                                            $('.badge-attendance.badge-id-{3}').html(chartHtml);
-
-                                        }}
-                                }},
-                        }});
-                    }});
-                </script>
-
-            ", Person.Id.ToString(), monthsToDisplay , minBarHeight, badge.Id ));
-
         }
 
+        /// <summary>
+        /// Gets the java script.
+        /// </summary>
+        /// <param name="badge"></param>
+        /// <returns></returns>
+        protected override string GetJavaScript( BadgeCache badge )
+        {
+            var minBarHeight = GetAttributeValue( badge, "MinimumBarHeight" ).AsIntegerOrNull() ?? 2;
+            var monthsToDisplay = GetAttributeValue( badge, "MonthsToDisplay" ).AsIntegerOrNull() ?? 24;
 
+            return string.Format( @"
+                var monthNames = [ 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' ];
+
+                $.ajax({{
+                    type: 'GET',
+                    url: Rock.settings.get('baseUrl') + 'api/Badges/FamilyAttendance/{0}/{1}' ,
+                    statusCode: {{
+                        200: function (data, status, xhr) {{
+                            var chartHtml = '<ul class=\'attendance-chart list-unstyled\'>';
+                            $.each(data, function() {{
+                                var barHeight = (this.AttendanceCount / this.SundaysInMonth) * 100;
+                                if (barHeight < {2}) {{
+                                    barHeight = {2};
+                                }}
+
+                                chartHtml += '<li title=\'' + monthNames[this.Month -1] + ' ' + this.Year +'\'><span style=\'height: ' + barHeight + '%\'></span></li>';
+                            }});
+                            chartHtml += '</ul>';
+
+                            $('.badge-attendance.badge-id-{3}').html(chartHtml);
+                        }}
+                    }},
+                }});
+            ", Person.Id.ToString(), monthsToDisplay, minBarHeight, badge.Id );
+        }
     }
 }
